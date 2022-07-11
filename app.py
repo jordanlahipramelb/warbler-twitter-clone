@@ -13,7 +13,9 @@ app = Flask(__name__)
 
 # Get DB_URI from environ variable (useful for production/testing) or,
 # if not set there, use development local db.
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "postgres:///warbler")
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
+    "DATABASE_URL", "postgres:///twitter_clone"
+)
 
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SQLALCHEMY_ECHO"] = False
@@ -22,20 +24,6 @@ app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "it's a secret")
 toolbar = DebugToolbarExtension(app)
 
 connect_db(app)
-
-
-#################################################
-# Part 1 Step 7 Questions
-# How is the logged in user being kept track of?
-#   The logged in user is named as CURR_USER_KEY in the sessionm which is the user.id
-# What is Flask’s g object?
-#  g stands for global in Flask global.
-# What is the purpose of add_user_to_g?
-#   This function adds the user into the Flask global which is the Flask session
-# What does @app.before_request mean?
-#   Registers a function to run before each request.
-#   For example, this can be used to open a database connection, or to load the logged in user from the session.
-#   The function will be called without any arguments. If it returns a non-None value, the value is handled as if it was the return value from the view, and further request handling is stopped.
 
 
 ##############################################################################
@@ -57,7 +45,7 @@ def add_user_to_g():
 def do_login(user):
     """Log in user."""
 
-    # isnerts the CURR_USER_KEY into the session, names it user.id
+    # inserts the CURR_USER_KEY into the session, names it user.id
     session[CURR_USER_KEY] = user.id
     # import pdb
 
@@ -168,7 +156,12 @@ def users_show(user_id):
 
     # snagging messages in order from the database;
     # user.messages won't be in order by default
-    messages = Message.query.filter(Message.user_id == user_id).order_by(Message.timestamp.desc()).limit(100).all()
+    messages = (
+        Message.query.filter(Message.user_id == user_id)
+        .order_by(Message.timestamp.desc())
+        .limit(100)
+        .all()
+    )
     return render_template("users/show.html", user=user, messages=messages)
 
 
@@ -245,7 +238,9 @@ def profile():
             user.username = form.username.data
             user.email = form.email.data
             user.image_url = form.image_url.data or "/static/images/default-pic.png"
-            user.header_image_url = form.header_image_url.data or "/static/images/warbler-hero.jpg"
+            user.header_image_url = (
+                form.header_image_url.data or "/static/images/warbler-hero.jpg"
+            )
             user.bio = form.bio.data
 
             db.session.commit()
@@ -376,10 +371,15 @@ def homepage():
         # displays the tweets of the users you are following
         # singles them out using their id
         # for users you're following in the list of users you're following, return the users you're following's id.
-        following_ids = [users_following.id for users_following in g.user.following] + [g.user.id]
+        following_ids = [users_following.id for users_following in g.user.following] + [
+            g.user.id
+        ]
 
         messages = (
-            Message.query.filter(Message.user_id.in_(following_ids)).order_by(Message.timestamp.desc()).limit(100).all()
+            Message.query.filter(Message.user_id.in_(following_ids))
+            .order_by(Message.timestamp.desc())
+            .limit(100)
+            .all()
         )
 
         return render_template("home.html", messages=messages)
