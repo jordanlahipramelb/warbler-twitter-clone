@@ -19,7 +19,7 @@ app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
 
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SQLALCHEMY_ECHO"] = False
-app.config["DEBUG_TB_INTERCEPT_REDIRECTS"] = True
+app.config["DEBUG_TB_INTERCEPT_REDIRECTS"] = False
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "it's a secret")
 toolbar = DebugToolbarExtension(app)
 
@@ -326,8 +326,7 @@ def show_likes(user_id):
 
     # QUERY USER ID TO USE IN TEMPLATE IN ORDER TO ACCESS LIKES TO SHOW IN TEMPLATE
     user = User.query.get_or_404(user_id)
-
-    return render_template("users/likes.html", user=user)
+    return render_template('users/likes.html', user=user, likes=user.likes)
 
 
 @app.route("/users/add_like/<int:message_id>", methods=["POST"])
@@ -382,7 +381,9 @@ def homepage():
             .all()
         )
 
-        return render_template("home.html", messages=messages)
+        liked_messages = [messages.id for messages in g.user.likes]
+
+        return render_template("home.html", messages=messages, likes=liked_messages)
 
     else:
         return render_template("home-anon.html")
