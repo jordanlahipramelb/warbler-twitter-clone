@@ -326,7 +326,7 @@ def show_likes(user_id):
 
     # QUERY USER ID TO USE IN TEMPLATE IN ORDER TO ACCESS LIKES TO SHOW IN TEMPLATE
     user = User.query.get_or_404(user_id)
-    return render_template('users/likes.html', user=user, likes=user.likes)
+    return render_template("users/likes.html", user=user, likes=user.likes)
 
 
 @app.route("/users/add_like/<int:message_id>", methods=["POST"])
